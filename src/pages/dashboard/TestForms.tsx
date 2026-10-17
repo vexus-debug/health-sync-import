@@ -1,3 +1,4 @@
+import { Pager, usePaged } from "@/components/common/Pager";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -27,7 +28,7 @@ const TestForms = ({ defaultFilter = "all" as Filter, title = "Test Forms", subt
   const [params] = useSearchParams();
   const [q, setQ] = useState(params.get("q") ?? "");
   const [filter, setFilter] = useState<Filter>(defaultFilter);
-  const [range, setRange] = useState<DateRange>("30d");
+  const [range, setRange] = useState<DateRange>("all");
 
   const filtered = useMemo(() => {
     const cutoff = dateRangeCutoff(range);
@@ -40,6 +41,7 @@ const TestForms = ({ defaultFilter = "all" as Filter, title = "Test Forms", subt
       return matchQ && matchF && matchD;
     });
   }, [forms, q, filter, range]);
+  const paged = usePaged(filtered, filtered.length);
 
   const exportCsv = () =>
     downloadCsv(
@@ -116,7 +118,7 @@ const TestForms = ({ defaultFilter = "all" as Filter, title = "Test Forms", subt
                         No matching test forms.
                       </TableCell>
                     </TableRow>
-                  ) : filtered.map((f) => (
+                  ) : paged.slice.map((f) => (
                     <TableRow key={f.serial}>
                       <TableCell className="font-mono text-xs font-semibold text-primary">{f.serial}</TableCell>
                       <TableCell>
@@ -146,6 +148,7 @@ const TestForms = ({ defaultFilter = "all" as Filter, title = "Test Forms", subt
                   ))}
                 </TableBody>
               </Table>
+              <Pager {...paged} />
             </div>
           )}
         </CardContent>
