@@ -29,12 +29,15 @@ export interface DbTestForm {
 }
 
 export async function fetchTestForms(): Promise<DbTestForm[]> {
-  const { data, error } = await supabase
-    .from("test_forms")
-    .select("*")
-    .order("created_at", { ascending: false });
-  if (error) throw error;
-  return (data ?? []) as unknown as DbTestForm[];
+  const { fetchAllRows } = await import("./fetchAll");
+  return fetchAllRows<DbTestForm>((f, t) =>
+    supabase
+      .from("test_forms")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .order("id")
+      .range(f, t) as any,
+  );
 }
 
 export async function fetchTestForm(serial: string): Promise<DbTestForm | null> {

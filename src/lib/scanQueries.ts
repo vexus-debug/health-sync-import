@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAllRows } from "./fetchAll";
 
 export interface ScanPatient {
   id: string;
@@ -75,9 +76,9 @@ export interface ScanActivity {
 }
 
 export async function fetchScans(): Promise<Scan[]> {
-  const { data, error } = await supabase.from("scans").select("*").order("created_at", { ascending: false });
-  if (error) throw error;
-  return (data ?? []) as Scan[];
+  return fetchAllRows<Scan>((f, t) =>
+    supabase.from("scans").select("*").order("created_at", { ascending: false }).order("id").range(f, t) as any,
+  );
 }
 export async function fetchScan(id: string): Promise<Scan | null> {
   const { data, error } = await supabase.from("scans").select("*").eq("id", id).maybeSingle();
@@ -90,9 +91,9 @@ export async function fetchScanBySerial(serial: string): Promise<Scan | null> {
   return data as Scan | null;
 }
 export async function fetchPatients(): Promise<ScanPatient[]> {
-  const { data, error } = await supabase.from("scan_patients").select("*").order("created_at", { ascending: false });
-  if (error) throw error;
-  return (data ?? []) as ScanPatient[];
+  return fetchAllRows<ScanPatient>((f, t) =>
+    supabase.from("scan_patients").select("*").order("created_at", { ascending: false }).order("id").range(f, t) as any,
+  );
 }
 export async function searchPatients(q: string): Promise<ScanPatient[]> {
   const term = q.trim();
