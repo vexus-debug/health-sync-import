@@ -1,3 +1,4 @@
+import { Pager, usePaged } from "@/components/common/Pager";
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -17,7 +18,7 @@ import { useRealtime } from "@/lib/useRealtime";
 const Scans = () => {
   const [q, setQ] = useState("");
   const [status, setStatus] = useState("All");
-  const [range, setRange] = useState<DateRange>("30d");
+  const [range, setRange] = useState<DateRange>("all");
   const [urgentOnly, setUrgentOnly] = useState(false);
   const [sort, setSort] = useState<"newest" | "oldest">("newest");
   const { data: scans = [] } = useQuery({ queryKey: ["scans"], queryFn: fetchScans });
@@ -43,6 +44,7 @@ const Scans = () => {
     });
     return out;
   }, [scans, status, urgentOnly, range, q, pMap, sort]);
+  const paged = usePaged(filtered, filtered.length);
 
   const exportCsv = () => {
     downloadCsv(
@@ -103,7 +105,7 @@ const Scans = () => {
         </div>
         <Card><CardContent className="p-0 divide-y">
           {filtered.length === 0 && <p className="p-6 text-sm text-muted-foreground text-center">No scans.</p>}
-          {filtered.map((s) => {
+          {paged.slice.map((s) => {
             const p = pMap[s.patient_id];
             return (
               <Link key={s.id} to={`/scan-dashboard/scans/${s.id}`} className="block p-4 hover:bg-muted">
@@ -120,6 +122,7 @@ const Scans = () => {
               </Link>
             );
           })}
+          <Pager {...paged} />
         </CardContent></Card>
       </div>
     </ScanLayout>
